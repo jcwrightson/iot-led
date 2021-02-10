@@ -37,8 +37,8 @@ void setup()
     Serial.begin(9600);
     connect_to_wifi();
 
-    pinMode(LED_BUILTIN, OUTPUT);
-    digitalWrite(LED_BUILTIN, HIGH);
+    pinMode(PIN, OUTPUT);
+    digitalWrite(PIN, LOW);
 }
 
 void loop()
@@ -68,7 +68,7 @@ void loop()
 
         Serial.print("Setting PIN: ");
         Serial.println(item[0].as<int>());
-        digitalWrite(PIN, state == 1 ? LOW : HIGH);
+        digitalWrite(PIN, !state);
         Serial.print("Waiting for...: ");
         Serial.print(duration);
         Serial.print("ms");
