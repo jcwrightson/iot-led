@@ -9,7 +9,7 @@
 const char *API_KEY;
 const char *URL;
 const char *FINGER_PRINT;
-const int TICK_INTERVAL = 10000;
+const int POLL_INTERVAL = 50000;
 
 const char *SSID;
 const char *WL_PASSWORD;
@@ -76,5 +76,5 @@ void loop()
     }
 
     https.end();
-    delay(TICK_INTERVAL);
+    delay(POLL_INTERVAL);
 }
