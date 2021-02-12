@@ -4,15 +4,14 @@
 #include <iostream>
 #include "ArduinoJson.h"
 
-#define PIN LED_BUILTIN
+#define PIN 12
 
-const char *API_KEY;
-const char *URL;
-const char *FINGER_PRINT;
+const char *API_KEY = "xxxxxxx";
+const char *URL = "https://xxxxxxxxxx.eu-west-1.amazonaws.com/Prod/latest/morse";
+const char *FINGER_PRINT = "SHA1 Finger Print";
 const int POLL_INTERVAL = 50000;
-
-const char *SSID;
-const char *WL_PASSWORD;
+const char *SSID = "your-ssid";
+const char *WL_PASSWORD = "your-password";
 
 HTTPClient https;
 
@@ -38,7 +37,8 @@ void setup()
     connect_to_wifi();
 
     pinMode(PIN, OUTPUT);
-    digitalWrite(PIN, LOW);
+    digitalWrite(PIN, 0); // When using LED_BUILTIN "HIGH" is off and "LOW" is on?
+
 }
 
 void loop()
@@ -50,31 +50,36 @@ void loop()
     int code = https.GET();
     String response = https.getString();
 
-    StaticJsonDocument<1024> doc;
+    StaticJsonDocument<1264> doc;
     deserializeJson(doc, response);
 
-    String author = doc["author"];
-
     Serial.println(code);
-    Serial.println(author);
 
-    JsonArray stream = doc["stream"].as<JsonArray>();
+    JsonArray m = doc.as<JsonArray>();
 
-    for (JsonVariant row : stream)
+    for (JsonVariant i : m)
     {
-        JsonArray item = row.as<JsonArray>();
-        int state = item[0];
-        int duration = item[1];
 
-        Serial.print("Setting PIN: ");
-        Serial.println(item[0].as<int>());
-        digitalWrite(PIN, !state);
-        Serial.print("Waiting for...: ");
-        Serial.print(duration);
-        Serial.print("ms");
-        delay(duration);
+        int state = i;
+        int p = 100;
+
+        Serial.print(i.as<int>());
+
+        if (i == 2)
+        {
+            digitalWrite(PIN, 0);
+            delay(500);
+        }
+        else
+        {
+            digitalWrite(PIN, 1);
+            delay(i == 0 ? p : 300);
+            digitalWrite(PIN, 0);
+            delay(p);
+        }
     }
 
+    digitalWrite(PIN, 0);
     https.end();
     delay(POLL_INTERVAL);
 }
