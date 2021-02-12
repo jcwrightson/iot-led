@@ -2,22 +2,28 @@ const uuid = require("uuid")
 const dynamodb = require("aws-sdk/clients/dynamodb")
 const docClient = new dynamodb.DocumentClient()
 const tableName = process.env.STREAM_TABLE
+const { MORSE } = require("../constants")
 
-const validateBody = ({ author = undefined, stream = undefined }) => {
-  if (!author | !stream) {
+const validateBody = ({ from = undefined, msg = undefined }) => {
+  if (!from || !msg) {
     return false
   }
 
-  if (!Boolean(stream.length)) {
+  if (!Boolean(msg.length)) {
     return false
   }
 
-  return Boolean(
-    stream.filter((bit) => !isNaN(bit[0]) || !isNaN(bit[1])).length
+  return typeof msg == "string"
+}
+
+const convert = (text, mapping = MORSE) => {
+  return [...text.toLowerCase()].reduce(
+    (stream, char) => [...stream, ...mapping[char], 2],
+    []
   )
 }
 
-exports.putItemHandler = async (event) => {
+exports.putItemMorseHandler = async (event) => {
   if (event.httpMethod !== "POST") {
     throw new Error(
       `postMethod only accepts POST method, you tried: ${event.httpMethod} method.`
@@ -28,31 +34,34 @@ exports.putItemHandler = async (event) => {
 
   const body = JSON.parse(event.body)
 
-  const success = {
-    statusCode: 200,
-    body: JSON.stringify(body),
-  }
-
-  const errored = {
-    statusCode: 401,
+  let response = {
+    statusCode: 418,
     body: JSON.stringify(body),
     msg: "Invalid Request",
   }
 
-  response = success
-
   if (!validateBody(body)) {
-    response = errored
-
     console.info(
       `response from: ${event.path} statusCode: ${response.statusCode} body: ${response.body}`
     )
     return response
   }
 
-  var params = {
+  encoded = convert(body.msg)
+
+  const params = {
     TableName: tableName,
-    Item: { id: uuid.v4(), author: body.author, stream: body.stream, created_at: Date.now() },
+    Item: {
+      id: uuid.v4(),
+      from: body.from,
+      m: encoded,
+      created_at: Date.now(),
+    },
+  }
+
+  response = {
+    statusCode: 200,
+    body: JSON.stringify({ ...body, encoded: encoded }),
   }
 
   await docClient.put(params).promise()

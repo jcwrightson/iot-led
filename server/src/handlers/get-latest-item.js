@@ -13,7 +13,8 @@ exports.getLatestItemHandler = async (event) => {
 
   var params = {
     TableName: tableName,
-    Limit: 1,
+    ScanIndexForward: true,
+    Limit: 1
   }
   const data = await docClient.scan(params).promise()
   const items = data.Items

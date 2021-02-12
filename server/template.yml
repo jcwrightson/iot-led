@@ -1,24 +1,11 @@
-# This is the SAM template that represents the architecture of your serverless application
-# https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-template-basics.html
-
-# The AWSTemplateFormatVersion identifies the capabilities of the template
-# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/format-version-structure.html
 AWSTemplateFormatVersion: 2010-09-09
 Description: >-
   iot-led
 
-# Transform section specifies one or more macros that AWS CloudFormation uses to process your template
-# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/transform-section-structure.html
 Transform:
   - AWS::Serverless-2016-10-31
 
-# Resources declares the AWS resources that you want to include in the stack
-# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
 Resources:
-  # Each Lambda function is defined by properties:
-  # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-
-  # This is a Lambda function config associated with the source code: get-all-items.js
   getAllItemsFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -28,12 +15,10 @@ Resources:
       Timeout: 100
       Description: A simple example includes a HTTP get method to get all items from a DynamoDB table.
       Policies:
-        # Give Create/Read/Update/Delete Permissions to the SampleTable
         - DynamoDBCrudPolicy:
             TableName: !Ref StreamTable
       Environment:
         Variables:
-          # Make table name accessible as environment variable from function code during execution
           STREAM_TABLE: !Ref StreamTable
       Events:
         Api:
@@ -53,18 +38,39 @@ Resources:
       Timeout: 100
       Description: A simple example includes a HTTP get method to get all items from a DynamoDB table.
       Policies:
-        # Give Create/Read/Update/Delete Permissions to the SampleTable
         - DynamoDBCrudPolicy:
             TableName: !Ref StreamTable
       Environment:
         Variables:
-          # Make table name accessible as environment variable from function code during execution
           STREAM_TABLE: !Ref StreamTable
       Events:
         Api:
           Type: Api
           Properties:
             Path: /latest
+            Method: GET
+            Auth:
+              ApiKeyRequired: true
+
+  getLatestItemMorseFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/get-latest-item-morse.getLatestItemMorseHandler
+      Runtime: nodejs14.x
+      MemorySize: 128
+      Timeout: 100
+      Description: A simple example includes a HTTP get method to get all items from a DynamoDB table.
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref StreamTable
+      Environment:
+        Variables:
+          STREAM_TABLE: !Ref StreamTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /latest/morse
             Method: GET
             Auth:
               ApiKeyRequired: true
@@ -78,12 +84,10 @@ Resources:
       Timeout: 100
       Description: A simple example includes a HTTP get method to get one item by id from a DynamoDB table.
       Policies:
-        # Give Create/Read/Update/Delete Permissions to the SampleTable
         - DynamoDBCrudPolicy:
             TableName: !Ref StreamTable
       Environment:
         Variables:
-          # Make table name accessible as environment variable from function code during execution
           STREAM_TABLE: !Ref StreamTable
       Events:
         Api:
@@ -93,10 +97,7 @@ Resources:
             Method: GET
             Auth:
               ApiKeyRequired: true
-  # Each Lambda function is defined by properties:
-  # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
 
-  # This is a Lambda function config associated with the source code: put-item.js
   putItemFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -106,12 +107,10 @@ Resources:
       Timeout: 100
       Description: A simple example includes a HTTP post method to add one item to a DynamoDB table.
       Policies:
-        # Give Create/Read/Update/Delete Permissions to the SampleTable
         - DynamoDBCrudPolicy:
             TableName: !Ref StreamTable
       Environment:
         Variables:
-          # Make table name accessible as environment variable from function code during execution
           STREAM_TABLE: !Ref StreamTable
       Events:
         Api:
@@ -119,19 +118,58 @@ Resources:
           Properties:
             Path: /
             Method: POST
-  # Simple syntax to create a DynamoDB table with a single attribute primary key, more in
-  # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlesssimpletable
 
-  # DynamoDB table to store item: {id: &lt;ID&gt;, name: &lt;NAME&gt;}
-  StreamTable:
-    Type: AWS::Serverless::SimpleTable
+  putItemMorseFunction:
+    Type: AWS::Serverless::Function
     Properties:
-      PrimaryKey:
-        Name: id
-        Type: String
+      Handler: src/handlers/put-item-morse.putItemMorseHandler
+      Runtime: nodejs14.x
+      MemorySize: 128
+      Timeout: 100
+      Description: A simple example includes a HTTP post method to add one item to a DynamoDB table.
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref StreamTable
+      Environment:
+        Variables:
+          STREAM_TABLE: !Ref StreamTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /morse
+            Method: POST
+
+  StreamTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: "id"
+          AttributeType: "S"
+        - AttributeName: "created_at"
+          AttributeType: "N"
+      KeySchema:
+        - AttributeName: "id"
+          KeyType: "HASH"
+        - AttributeName: "created_at"
+          KeyType: "RANGE"
       ProvisionedThroughput:
         ReadCapacityUnits: 2
         WriteCapacityUnits: 2
+      GlobalSecondaryIndexes:
+        - IndexName: "myGSI"
+          KeySchema:
+            - AttributeName: "id"
+              KeyType: "HASH"
+            - AttributeName: "created_at"
+              KeyType: "RANGE"
+          Projection:
+            NonKeyAttributes:
+              - "m"
+            ProjectionType: "INCLUDE"
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
 
 Outputs:
   WebEndpoint:
