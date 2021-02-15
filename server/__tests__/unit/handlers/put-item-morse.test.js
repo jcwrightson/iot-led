@@ -16,12 +16,12 @@ describe("Test putItemHandler", function () {
   it("should add item to the table", async () => {
     const testData = {
       from: "John",
-      msg: "sos",
+      msg: "sos s",
     }
     const testResult = {
       from: "John",
-      msg: "sos",
-      encoded: [0,0,0,2,1,1,1,2,0,0,0,2]
+      msg: "sos s",
+      encoded: [0,0,0,2,1,1,1,2,0,0,0,2,2,2,0,0,0,2]
     }
 
     putSpy.mockReturnValue({
@@ -37,6 +37,11 @@ describe("Test putItemHandler", function () {
 
     const expectedResult = {
       statusCode: 200,
+      headers: {
+        "Access-Control-Allow-Headers": "Content-Type,x-api-key",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "OPTIONS,POST",
+      },
       body: JSON.stringify(testResult),
     }
 

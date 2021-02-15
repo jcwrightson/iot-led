@@ -6,6 +6,22 @@ Transform:
   - AWS::Serverless-2016-10-31
 
 Resources:
+  optionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/options.optionsHandler
+      Runtime: nodejs14.x
+      MemorySize: 128
+      Timeout: 100
+      Description: A simple example includes a HTTP get method to get all items from a DynamoDB table.
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /
+            Method: options
+
+
   getAllItemsFunction:
     Type: AWS::Serverless::Function
     Properties:

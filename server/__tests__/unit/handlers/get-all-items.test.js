@@ -30,6 +30,11 @@ describe("Test getAllItemsHandler", () => {
     const expectedResult = {
       statusCode: 200,
       body: JSON.stringify(items),
+      headers: {
+        "Access-Control-Allow-Headers": "Content-Type, x-api-key",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "OPTIONS,GET",
+      },
     }
 
     expect(result).toEqual(expectedResult)

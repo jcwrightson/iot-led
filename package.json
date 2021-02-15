@@ -1,0 +1,22 @@
+{
+  "name": "iot-led",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jcwrightson/iot-led.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jcwrightson/iot-led/issues"
+  },
+  "homepage": "https://github.com/jcwrightson/iot-led#readme",
+  "devDependencies": {
+    "create-react-app": "^4.0.2"
+  }
+}

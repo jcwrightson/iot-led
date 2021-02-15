@@ -54,6 +54,7 @@ exports.putItemMorseHandler = async (event) => {
     Item: {
       id: uuid.v4(),
       from: body.from,
+      msg: body.msg,
       m: encoded,
       created_at: Date.now(),
     },
@@ -61,6 +62,11 @@ exports.putItemMorseHandler = async (event) => {
 
   response = {
     statusCode: 200,
+    headers: {
+      "Access-Control-Allow-Headers": "Content-Type,x-api-key",
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "OPTIONS,POST",
+    },
     body: JSON.stringify({ ...body, encoded: encoded }),
   }
 
